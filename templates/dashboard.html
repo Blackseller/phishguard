@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2><i class="fas fa-tachometer-alt"></i> Security Dashboard</h2>
+    <p>Comprehensive overview of your phishing detection activities</p>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_scans }}</div>
+        <div class="stat-label">Total Scans</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-icon">
+            <i class="fas fa-link"></i>
+        </div>
+        <div class="stat-value">{{ stats.url_scans }}</div>
+        <div class="stat-label">URL Scans</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-icon">
+            <i class="fas fa-envelope"></i>
+        </div>
+        <div class="stat-value">{{ stats.email_scans }}</div>
+        <div class="stat-label">Email Scans</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-value">{{ stats.high_risk }}</div>
+        <div class="stat-label">High Risk</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-value">{{ stats.medium_risk }}</div>
+        <div class="stat-label">Medium Risk</div>
+    </div>
+    <div class="stat-card safe">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ stats.low_risk }}</div>
+        <div class="stat-label">Low Risk</div>
+    </div>
+</div>
+
+<div class="dashboard-charts">
+    <div class="chart-card">
+        <h3><i class="fas fa-chart-pie"></i> Risk Distribution</h3>
+        <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3><i class="fas fa-chart-line"></i> Scans Over Time</h3>
+        <div class="chart-container">
+            <canvas id="timelineChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="history-section">
+    <div class="section-header">
+        <h2><i class="fas fa-history"></i> Recent Scans</h2>
+        <button class="btn-icon" onclick="exportHistory()">
+            <i class="fas fa-download"></i> Export
+        </button>
+    </div>
+    <div class="history-grid">
+        {% for item in history %}
+        <div class="history-item {% if item.risk > 70 %}danger{% elif item.risk > 30 %}warning{% else %}safe{% endif %}">
+            <div class="history-type">
+                <i class="fas {% if item.type == 'url' %}fa-link{% else %}fa-envelope{% endif %}"></i>
+                {{ item.type|upper }}
+            </div>
+            <div class="history-content">
+                {{ item.content }}
+            </div>
+            <div class="history-details">
+                <div class="history-risk">
+                    <span class="risk-value">{{ item.risk }}%</span>
+                    <span class="risk-label">
+                        {% if item.risk > 70 %}High Risk{% elif item.risk > 30 %}Medium Risk{% else %}Low Risk{% endif %}
+                    </span>
+                </div>
+                <div class="history-date">
+                    <i class="fas fa-clock"></i> {{ item.date }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Initialize charts on dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Risk distribution chart
+        const riskCtx = document.getElementById('riskChart').getContext('2d');
+        const riskChart = new Chart(riskCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                datasets: [{
+                    data: [{{ stats.high_risk }}, {{ stats.medium_risk }}, {{ stats.low_risk }}],
+                    backgroundColor: [
+                        '#f72585',
+                        '#f8961e',
+                        '#4cc9f0'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} scans`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Timeline chart (simplified)
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Scans',
+                    data: [12, 19, 8, 15, 14, 10, 7],
+                    borderColor: '#4361ee',
+                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

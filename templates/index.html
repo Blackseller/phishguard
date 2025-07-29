@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-container">
+    <!-- URL Analysis Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-link"></i> URL Analysis</h2>
+            <div class="ai-tag">AI-Powered</div>
+        </div>
+        <div class="input-group">
+            <label for="url-input">Enter URL to analyze:</label>
+            <div class="input-with-button">
+                <input type="text" id="url-input" placeholder="https://example.com">
+                <button class="btn btn-icon" onclick="analyzeURL()">
+                    <i class="fas fa-search"></i> Analyze
+                </button>
+            </div>
+        </div>
+        
+        <div class="results" id="url-results">
+            <div id="blacklist-warning" class="blacklist-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Security Alert!</strong> This URL is blacklisted as a known phishing site.
+                </div>
+            </div>
+            
+            <h3>Analysis Results</h3>
+            <div class="risk-summary">
+                <div class="risk-score">
+                    <span class="score-value" id="url-risk-value">0</span>
+                    <span class="score-label">Risk Score</span>
+                </div>
+                <div class="risk-category">
+                    <span id="url-risk-category">Low Risk</span>
+                </div>
+            </div>
+            
+            <div class="risk-labels">
+                <span class="risk-label">Low Risk</span>
+                <span class="risk-label">Medium Risk</span>
+                <span class="risk-label">High Risk</span>
+            </div>
+            <div class="risk-meter">
+                <div class="risk-level" id="url-risk-level"></div>
+            </div>
+            
+            <div class="features-grid" id="url-features">
+                <!-- Features populated by JavaScript -->
+            </div>
+            
+            <div class="ai-insights">
+                <h3><i class="fas fa-brain"></i> AI Insights</h3>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <i class="fas fa-percentage"></i>
+                            <span>Brand Similarity</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="similarity-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="insight-value" id="similarity-value">0%</div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Anomaly Detection</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="anomaly-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="insight-value" id="anomaly-value">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="url-chart"></canvas>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" onclick="generateReport('url')">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('url-results').style.display = 'none'">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Analysis Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-envelope"></i> Email Analysis</h2>
+            <div class="ai-tag">AI-Powered</div>
+        </div>
+        <div class="input-group">
+            <label for="email-input">Paste email content:</label>
+            <textarea id="email-input" placeholder="Paste the email content here..."></textarea>
+            <button class="btn" onclick="analyzeEmail()">
+                <i class="fas fa-envelope-open-text"></i> Analyze Email
+            </button>
+        </div>
+        
+        <div class="results" id="email-results">
+            <h3>Analysis Results</h3>
+            <div class="risk-summary">
+                <div class="risk-score">
+                    <span class="score-value" id="email-risk-value">0</span>
+                    <span class="score-label">Risk Score</span>
+                </div>
+                <div class="risk-category">
+                    <span id="email-risk-category">Low Risk</span>
+                </div>
+            </div>
+            
+            <div class="risk-labels">
+                <span class="risk-label">Low Risk</span>
+                <span class="risk-label">Medium Risk</span>
+                <span class="risk-label">High Risk</span>
+            </div>
+            <div class="risk-meter">
+                <div class="risk-level" id="email-risk-level"></div>
+            </div>
+            
+            <div class="nlp-analysis">
+                <div class="nlp-header">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Content Analysis</span>
+                </div>
+                <div class="nlp-score">
+                    <div class="nlp-bar">
+                        <div class="nlp-fill" id="nlp-fill"></div>
+                    </div>
+                    <div class="nlp-value" id="nlp-value">0%</div>
+                </div>
+                <div class="nlp-description" id="nlp-description">Neutral sentiment detected</div>
+            </div>
+            
+            <div class="features-grid" id="email-features">
+                <!-- Features populated by JavaScript -->
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="email-chart"></canvas>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" onclick="generateReport('email')">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('email-results').style.display = 'none'">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="history-section">
+    <div class="section-header">
+        <h2><i class="fas fa-history"></i> Recent Scans</h2>
+        <button class="btn-icon" onclick="exportHistory()">
+            <i class="fas fa-download"></i> Export
+        </button>
+    </div>
+    <div class="history-grid" id="history-grid">
+        <!-- History items populated by JavaScript -->
+    </div>
+</div>
+
+<div class="ai-explanation">
+    <h3><i class="fas fa-microchip"></i> How Our AI Detection Works</h3>
+    <div class="explanation-grid">
+        <div class="explanation-card">
+            <div class="explanation-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h4>Machine Learning Models</h4>
+            <p>Advanced algorithms trained on millions of phishing examples detect subtle patterns humans miss.</p>
+        </div>
+        <div class="explanation-card">
+            <div class="explanation-icon">
+                <i class="fas fa-language"></i>
+            </div>
+            <h4>Natural Language Processing</h4>
+            <p>Analyzes email content for suspicious language patterns and social engineering tactics.</p>
+        </div>
+        <div class="explanation-card">
+            <div class="explanation-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h4>Behavioral Analysis</h4>
+            <p>Detects anomalies in URLs and email structures that indicate phishing attempts.</p>
+        </div>
+        <div class="explanation-card">
+            <div class="explanation-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h4>Real-time Intelligence</h4>
+            <p>Checks against constantly updated databases of known phishing threats.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
