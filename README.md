@@ -1,22 +1,24 @@
-## Model Installation
+# PhishGuard - Advanced Phishing Detection System
 
-### For small installations:
-```bash
-# Models are included in the repository
-git clone https://github.com/your-username/phishguard
-cd phishguard
-```
+![PhishGuard Screenshot](screenshot.png)
 
-### For large models:
-```bash
-git clone https://github.com/your-username/phishguard
-cd phishguard
-bash download_models.sh
-```
+AI-powered phishing detection engine with URL and email analysis capabilities.
 
-### Running the application:
+## Features
+- Real-time URL scanning
+- Email content analysis
+- Machine learning integration
+- Threat intelligence feeds
+- Detailed security reports
+
+## Installation
 ```bash
 pip install -r requirements.txt
 export FLASK_APP=app.py
 flask run
 ```
+
+## Usage
+1. Access `http://localhost:5000`
+2. Enter URLs or email content
+3. Get instant phishing risk analysis
