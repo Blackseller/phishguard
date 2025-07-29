@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard - Advanced Phishing Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-shield-alt"></i> PhishGuard</h1>
+                    <p class="subtitle">AI-Powered Phishing Detection v5.0</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn" onclick="location.href='/'">
+                        <i class="fas fa-home"></i> Home
+                    </button>
+                    <button class="btn" onclick="location.href='/dashboard'">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </button>
+                    <button class="btn" onclick="exportHistory()">
+                        <i class="fas fa-file-export"></i> Export History
+                    </button>
+                </div>
+            </div>
+            <div class="ai-badge">
+                <span>AI-Powered Analysis</span>
+                <i class="fas fa-robot"></i>
+            </div>
+        </header>
+        
+        {% block content %}{% endblock %}
+        
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-shield-virus"></i> PhishGuard</h3>
+                    <p>Advanced AI-powered phishing detection system</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Detection Technology</h3>
+                    <ul>
+                        <li>Machine Learning Models</li>
+                        <li>Natural Language Processing</li>
+                        <li>Behavioral Analysis</li>
+                        <li>Real-time Threat Intelligence</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Security Features</h3>
+                    <ul>
+                        <li>End-to-end Encryption</li>
+                        <li>Secure Session Management</li>
+                        <li>CSRF Protection</li>
+                        <li>Privacy First Design</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 PhishGuard Security Systems. All rights reserved.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // URL Features template
+        const urlFeatures = [
+            { name: 'IP Address', icon: 'fa-globe' },
+            { name: '@ Symbol', icon: 'fa-at' },
+            { name: 'Long URL', icon: 'fa-ruler' },
+            { name: 'Redirection', icon: 'fa-directions' },
+            { name: 'Non-HTTPS', icon: 'fa-lock-open' },
+            { name: 'TinyURL', icon: 'fa-compress' },
+            { name: 'Prefix/Suffix', icon: 'fa-minus' },
+            { name: 'DNS Issues', icon: 'fa-server' },
+            { name: 'Blacklisted', icon: 'fa-ban' },
+            { name: 'Similarity', icon: 'fa-percentage' },
+            { name: 'Anomaly', icon: 'fa-chart-line' }
+        ];
+        
+        // Email Features template
+        const emailFeatures = [
+            { name: 'Suspicious Subject', icon: 'fa-heading' },
+            { name: 'Contains Links', icon: 'fa-link' },
+            { name: 'HTML Content', icon: 'fa-code' },
+            { name: 'Attachments', icon: 'fa-paperclip' },
+            { name: 'Sender Mismatch', icon: 'fa-user' },
+            { name: 'Auth Failure', icon: 'fa-shield-alt' },
+            { name: 'Credential Request', icon: 'fa-key' },
+            { name: 'Threat Language', icon: 'fa-exclamation-triangle' },
+            { name: 'Spelling Errors', icon: 'fa-spell-check' },
+            { name: 'NLP Score', icon: 'fa-brain' },
+            { name: 'Syntax Anomalies', icon: 'fa-bug' },
+            { name: 'Header Issues', icon: 'fa-envelope' }
+        ];
+        
+        // History data
+        let scanHistory = [];
+        
+        // Initialize charts
+        let urlChart, emailChart;
+        
+        function initCharts() {
+            const urlCtx = document.getElementById('url-chart')?.getContext('2d');
+            const emailCtx = document.getElementById('email-chart')?.getContext('2d');
+            
+            if (urlCtx) {
+                urlChart = new Chart(urlCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: urlFeatures.map(f => f.name),
+                        datasets: [{
+                            label: 'Threat Indicators',
+                            data: new Array(urlFeatures.length).fill(0),
+                            backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                            borderColor: '#4cc9f0',
+                            pointBackgroundColor: '#4cc9f0',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#4cc9f0'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 1,
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: { 
+                                    color: '#94a3b8',
+                                    font: { size: 10 }
+                                },
+                                ticks: { 
+                                    backdropColor: 'transparent',
+                                    color: '#94a3b8',
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+            
+            if (emailCtx) {
+                emailChart = new Chart(emailCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: emailFeatures.map(f => f.name),
+                        datasets: [{
+                            label: 'Threat Indicators',
+                            data: new Array(emailFeatures.length).fill(0),
+                            backgroundColor: 'rgba(248, 150, 30, 0.2)',
+                            borderColor: '#f8961e',
+                            pointBackgroundColor: '#f8961e',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#f8961e'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 1,
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: { 
+                                    color: '#94a3b8',
+                                    font: { size: 10 }
+                                },
+                                ticks: { 
+                                    backdropColor: 'transparent',
+                                    color: '#94a3b8',
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Populate history
+        function populateHistory() {
+            const historyGrid = document.getElementById('history-grid');
+            if (!historyGrid) return;
+            
+            historyGrid.innerHTML = '';
+            
+            scanHistory.forEach(item => {
+                const riskClass = item.risk > 70 ? 'danger' : (item.risk > 30 ? 'warning' : '');
+                const riskText = item.risk > 70 ? 'High Risk' : (item.risk > 30 ? 'Medium Risk' : 'Low Risk');
+                const icon = item.type === 'url' ? 'fa-link' : 'fa-envelope';
+                
+                const historyItem = document.createElement('div');
+                historyItem.className = `history-item ${riskClass}`;
+                historyItem.innerHTML = `
+                    <div class="history-url">
+                        <i class="fas ${icon}"></i> ${item.content}
+                    </div>
+                    <div>
+                        <span>Risk Level: </span>
+                        <span class="history-risk">${item.risk}%</span>
+                        <span> (${riskText})</span>
+                    </div>
+                    <div class="history-date">Scanned on: ${item.date}</div>
+                `;
+                
+                historyGrid.appendChild(historyItem);
+            });
+        }
+        
+        // Function to get CSRF token
+        async function getCsrfToken() {
+            try {
+                const response = await fetch('/get-csrf-token');
+                const data = await response.json();
+                return data.csrf_token;
+            } catch (error) {
+                console.error('Error fetching CSRF token:', error);
+                return '';
+            }
+        }
+        
+        // Analyze URL
+        async function analyzeURL() {
+            const urlInput = document.getElementById('url-input').value;
+            if (!urlInput) {
+                alert('Please enter a URL to analyze');
+                return;
+            }
+            
+            const btn = document.querySelector('.card:first-child .btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            btn.disabled = true;
+            
+            const csrfToken = await getCsrfToken();
+            
+            fetch('/analyze-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ url: urlInput })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                btn.innerHTML = '<i class="fas fa-search"></i> Analyze URL';
+                btn.disabled = false;
+                document.getElementById('url-results').style.display = 'block';
+                
+                const riskLevel = data.risk_score;
+                document.getElementById('url-risk-level').style.width = `${riskLevel}%`;
+                document.getElementById('url-risk-value').textContent = riskLevel;
+                document.getElementById('url-risk-category').textContent = 
+                    riskLevel > 70 ? 'High Risk' : riskLevel > 30 ? 'Medium Risk' : 'Low Risk';
+                
+                if (data.is_blacklisted) {
+                    document.getElementById('blacklist-warning').style.display = 'flex';
+                } else {
+                    document.getElementById('blacklist-warning').style.display = 'none';
+                }
+                
+                const featuresGrid = document.getElementById('url-features');
+                featuresGrid.innerHTML = '';
+                
+                data.features.forEach((feature, index) => {
+                    const featureCard = document.createElement('div');
+                    featureCard.className = 'feature-card';
+                    let iconClass = 'safe';
+                    if (feature.name === 'Similarity' || feature.name === 'Anomaly') {
+                        if (feature.value > 0.7) iconClass = 'danger';
+                        else if (feature.value > 0.3) iconClass = 'warning';
+                    } else {
+                        iconClass = feature.value ? 'danger' : 'safe';
+                    }
+                    
+                    let displayValue = feature.value;
+                    if (feature.name === 'Similarity' || feature.name === 'Anomaly') {
+                        displayValue = (feature.value * 100).toFixed(1) + '%';
+                    } else {
+                        displayValue = feature.value ? 'Yes' : 'No';
+                    }
+                    
+                    featureCard.innerHTML = `
+                        <div class="feature-icon ${iconClass}">
+                            <i class="fas ${urlFeatures[index].icon}"></i>
+                        </div>
+                        <div class="feature-name">${feature.name}</div>
+                        <div class="feature-value">${displayValue}</div>
+                    `;
+                    featuresGrid.appendChild(featureCard);
+                });
+                
+                if (urlChart) {
+                    urlChart.data.datasets[0].data = data.radar_data;
+                    urlChart.update();
+                }
+                
+                scanHistory.unshift({
+                    content: urlInput.length > 50 ? urlInput.substring(0, 47) + '...' : urlInput,
+                    risk: riskLevel,
+                    date: new Date().toLocaleString(),
+                    type: 'url'
+                });
+                
+                scanHistory = scanHistory.slice(0, 10);
+                populateHistory();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = '<i class="fas fa-search"></i> Analyze URL';
+                btn.disabled = false;
+                alert('Analysis failed. Please try a different URL.');
+            });
+        }
+        
+        // Analyze Email
+        async function analyzeEmail() {
+            const emailInput = document.getElementById('email-input').value;
+            if (!emailInput) {
+                alert('Please enter email content to analyze');
+                return;
+            }
+            
+            const btn = document.querySelector('.card:nth-child(2) .btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            btn.disabled = true;
+            
+            const csrfToken = await getCsrfToken();
+            
+            fetch('/analyze-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ email: emailInput })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                btn.innerHTML = '<i class="fas fa-envelope-open-text"></i> Analyze Email';
+                btn.disabled = false;
+                document.getElementById('email-results').style.display = 'block';
+                
+                const riskLevel = data.risk_score;
+                document.getElementById('email-risk-level').style.width = `${riskLevel}%`;
+                document.getElementById('email-risk-value').textContent = riskLevel;
+                document.getElementById('email-risk-category').textContent = 
+                    riskLevel > 70 ? 'High Risk' : riskLevel > 30 ? 'Medium Risk' : 'Low Risk';
+                
+                const nlpScore = data.nlp_score;
+                document.getElementById('nlp-fill').style.width = `${nlpScore}%`;
+                document.getElementById('nlp-value').textContent = `${nlpScore.toFixed(1)}%`;
+                
+                let nlpDescription = "Neutral sentiment detected";
+                if (nlpScore > 70) nlpDescription = "Positive sentiment detected";
+                else if (nlpScore < 30) nlpDescription = "Negative sentiment detected";
+                document.getElementById('nlp-description').textContent = nlpDescription;
+                
+                const featuresGrid = document.getElementById('email-features');
+                featuresGrid.innerHTML = '';
+                
+                data.features.forEach((feature, index) => {
+                    const featureCard = document.createElement('div');
+                    featureCard.className = 'feature-card';
+                    
+                    let displayValue = feature.value;
+                    if (feature.name === 'NLP Score') {
+                        displayValue = `${(feature.value * 100).toFixed(1)}%`;
+                    } else if (feature.name === 'Syntax Anomalies' || feature.name === 'Header Issues') {
+                        displayValue = `${(feature.value * 100).toFixed(1)}%`;
+                    } else {
+                        displayValue = feature.value ? 'Yes' : 'No';
+                    }
+                    
+                    let iconClass = 'safe';
+                    if (feature.name === 'NLP Score') {
+                        if (feature.value < 0.3) iconClass = 'danger';
+                        else if (feature.value < 0.7) iconClass = 'warning';
+                    } else if (feature.name === 'Syntax Anomalies' || feature.name === 'Header Issues') {
+                        if (feature.value > 0.7) iconClass = 'danger';
+                        else if (feature.value > 0.3) iconClass = 'warning';
+                    } else {
+                        iconClass = feature.value ? 'danger' : 'safe';
+                    }
+                    
+                    featureCard.innerHTML = `
+                        <div class="feature-icon ${iconClass}">
+                            <i class="fas ${emailFeatures[index].icon}"></i>
+                        </div>
+                        <div class="feature-name">${feature.name}</div>
+                        <div class="feature-value">${displayValue}</div>
+                    `;
+                    featuresGrid.appendChild(featureCard);
+                });
+                
+                if (emailChart) {
+                    emailChart.data.datasets[0].data = data.radar_data;
+                    emailChart.update();
+                }
+                
+                scanHistory.unshift({
+                    content: data.email_preview,
+                    risk: riskLevel,
+                    date: new Date().toLocaleString(),
+                    type: 'email'
+                });
+                
+                scanHistory = scanHistory.slice(0, 10);
+                populateHistory();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = '<i class="fas fa-envelope-open-text"></i> Analyze Email';
+                btn.disabled = false;
+                alert('Analysis failed. Please try different content.');
+            });
+        }
+        
+        // Generate report
+        async function generateReport(type) {
+            let content, riskScore;
+            
+            if (type === 'url') {
+                content = document.getElementById('url-input').value;
+                riskScore = document.getElementById('url-risk-level').style.width;
+            } else {
+                content = document.getElementById('email-input').value;
+                riskScore = document.getElementById('email-risk-level').style.width;
+            }
+            
+            const features = Array.from(document.querySelectorAll(`#${type}-features .feature-card`)).map(card => {
+                return {
+                    name: card.querySelector('.feature-name').textContent,
+                    value: card.querySelector('.feature-value').textContent
+                };
+            });
+            
+            const data = {
+                type: type,
+                content: content,
+                risk_score: parseInt(riskScore),
+                features: features
+            };
+            
+            // Add AI insights
+            if (type === 'url') {
+                data.similarity_score = parseFloat(document.querySelector('.feature-card:nth-child(10) .feature-value').textContent);
+                data.anomaly_score = parseFloat(document.querySelector('.feature-card:nth-child(11) .feature-value').textContent);
+            } else {
+                data.syntax_anomalies = parseFloat(document.querySelector('.feature-card:nth-child(11) .feature-value').textContent);
+            }
+            
+            const csrfToken = await getCsrfToken();
+            
+            fetch('/report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Report generated successfully! Report ID: ' + data.report_id);
+                console.log(data.report);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to generate report');
+            });
+        }
+        
+        // Export history
+        async function exportHistory() {
+            const csrfToken = await getCsrfToken();
+            
+            fetch('/export-history', {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'phishguard_history.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to export history');
+            });
+        }
+        
+        // Initialize the page
+        window.onload = function() {
+            initCharts();
+            populateHistory();
+        };
+    </script>
+</body>
+</html>
